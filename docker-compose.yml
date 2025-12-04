@@ -14,5 +14,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotel_booking_web
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
