@@ -25,3 +25,5 @@ repos:
           - "mypy==1.19.0"                                # фиксированная версия MyPy — совпадает с Poetry
           - "django-stubs"                                # типовые стабсы для Django (модели, ORM, views)
           - "djangorestframework-stubs"                   # стабсы типов для DRF (APIView, сериализаторы)
+          - "djangorestframework"
+          - "psycopg[binary]"
