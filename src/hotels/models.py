@@ -42,3 +42,24 @@ class Room(models.Model):
 
     def __str__(self) -> str:
         return f"Room(id={self.id}, category={self.category.code}, price={self.price})"
+
+
+class Booking(models.Model):
+    room = models.ForeignKey(
+        "hotels.Room",
+        on_delete=models.CASCADE,
+        related_name="bookings",
+    )
+    date_start = models.DateField()
+    date_end = models.DateField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Бронирование"
+        verbose_name_plural = "Бронирования"
+        ordering = ["date_start"]
+
+    def __str__(self) -> str:
+        return f"Booking(id={self.id}, room_id={self.room_id}, {self.date_start}..{self.date_end})"
