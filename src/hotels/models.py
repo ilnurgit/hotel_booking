@@ -30,7 +30,7 @@ class Room(models.Model):
     category: models.ForeignKey[RoomCategory, RoomCategory] = models.ForeignKey(
         RoomCategory, on_delete=models.PROTECT, related_name="rooms"
     )
-    description: models.TextField = models.TextField(max_length=2000)
+    description: models.CharField = models.CharField(max_length=2000)
     price: models.DecimalField = models.DecimalField(max_digits=8, decimal_places=2)
     created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
     updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
