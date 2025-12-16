@@ -1,0 +1,43 @@
+# Конфигурация pre-commit
+# Запускается локально перед коммитом и проверяет качество кода
+
+default_language_version:
+  python: python3.12
+
+repos:
+  # -----------------------------
+  # Базовые универсальные хуки
+  # -----------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace      # убирает пробелы в конце строк
+      - id: end-of-file-fixer        # добавляет пустую строку в конец файлов
+      - id: check-yaml               # проверяет корректность YAML
+      - id: check-json               # проверяет корректность JSON
+
+  # -----------------------------
+  # Ruff — линтер + автофиксы
+  # -----------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.7
+    hooks:
+      - id: ruff
+        args: [--fix]    # сразу чинит то, что может
+      - id: ruff-format  # форматирует код по правилам Ruff
+
+  # -----------------------------
+  # mypy — статическая типизация
+  # -----------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy      # зеркало MyPy для использования в pre-commit
+    rev: v1.19.0                                          # фиксированная версия MyPy-хуков (тег из GitHub)
+    hooks:
+      - id: mypy                                          # запуск статической типизации через MyPy
+        additional_dependencies:                          # зависимости, нужные MyPy внутри его отдельного venv
+          - "mypy==1.19.0"                                # фиксированная версия MyPy — совпадает с Poetry
+          - "django-stubs"                                # типовые стабсы для Django (модели, ORM, views)
+          - "djangorestframework-stubs"                   # стабсы типов для DRF (APIView, сериализаторы)
+          - "djangorestframework"
+          - "psycopg[binary]"
+          - "pydantic"
+          - "pydantic-settings"

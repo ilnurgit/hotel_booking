@@ -1,0 +1,175 @@
+[project]
+name = "hotel-booking"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Ilnur",email = "ilnur.altezza@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django (>=6.0,<7.0)",
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "psycopg[binary] (>=3.3.1,<4.0.0)",
+    "pydantic-settings (>=2.12.0,<3.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "pydantic (>=2.12.5,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.14.7,<0.15.0)",
+    "mypy (>=1.19.0,<2.0.0)",
+    "pytest (>=9.0.1,<10.0.0)",
+    "pytest-django (>=4.11.1,<5.0.0)",
+    "pre-commit (>=4.5.0,<5.0.0)",
+    "django-stubs (>=5.2.8,<6.0.0)",
+    "djangorestframework-stubs (>=3.16.6,<4.0.0)"
+]
+
+# -----------------------------
+# ----- КОНФИГУРАЦИЯ RUFF -----
+# -----------------------------
+
+# ===========================
+#  Настройки Ruff (форматирование + линтинг)
+#  Ruff = сверхбыстрый линтер + сортировщик импортов + обновлятор синтаксиса
+# ===========================
+[tool.ruff]
+# Максимальная длина строки
+# Идеальный баланс — 100 символов
+line-length = 100
+
+# Исключения — папки, которые Ruff НЕ должен проверять
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",        # виртуальное окружение
+    "__pycache__", # кэш Python
+]
+
+# Разрешить Ruff автоматически чинить ошибки, если ты запускаешь:
+#   poetry run ruff check . --fix
+fix = true
+
+
+# ===========================
+#  Настройки ЛИНТИНГА Ruff
+#  Все правила связанные с анализом кода — в этой секции
+# ===========================
+[tool.ruff.lint]
+
+# Набор правил, которые включены
+# Комбинация, которую используют большинство senior-разработчиков
+select = [
+    "F",   # Pyflakes — реальная проверка ошибок (неиспользуемые переменные, импорты)
+    "E",   # pycodestyle — ошибки по PEP8
+    "W",   # pycodestyle warnings — предупреждения PEP8
+    "B",   # bugbear — поиск скрытых логических ошибок
+    "I",   # isort — сортировка импортов
+    "UP",  # pyupgrade — обновление синтаксиса под современный Python
+    "N",   # pep8-naming — имена переменных, функций, классов
+    "PL",  # часть правил pylint — только полезные
+]
+
+# Правила, которые мы ОТКЛЮЧАЕМ (слишком строгие или токсичные)
+ignore = [
+    "PLR0913",  # слишком много аргументов у функции — иногда это нормально
+    "PLR0915",  # слишком большая функция — Ruff не должен тебя ограничивать
+    "PLR2004",  # запрет "магических" чисел — в реальной практике мешает
+]
+
+# Можно добавить сюда свои игнорируемые правила, если что-то будет мешать
+
+
+# ===========================
+#  Настройки сортировки импортов (бывший isort)
+#  Важно: сейчас правильная секция — именно [tool.ruff.lint.isort]
+# ===========================
+[tool.ruff.lint.isort]
+known-first-party = ["config", "hotels"]
+
+# Объединять импорты с 'as' в одну строку
+combine-as-imports = true
+
+# Не принуждать каждый импорт в отдельную строку
+force-single-line = false
+
+# -----------------------------
+# ----- КОНФИГУРАЦИЯ MYPY -----
+# -----------------------------
+
+[tool.mypy]
+# Версия Python, под которую пишем код
+plugins = ["mypy_django_plugin.main"]
+python_version = "3.12"
+mypy_path = ["src"]
+
+# Строгость и полезные предупреждения
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+
+# Чуть более строгая работа с Optional
+no_implicit_optional = true
+
+# Строго сравниваем типы в == и !=
+strict_equality = true
+
+# Не падаем из-за отсутствия type-stub'ов у внешних библиотек
+ignore_missing_imports = true
+
+# Что не проверяем
+exclude = [
+  "^\\.venv/",
+  "^venv/",
+  "^build/",
+  "^dist/",
+  "^migrations/",
+]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+# Более мягкие правила для тестов (если в проекте есть каталог tests/)
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+check_untyped_defs = false
+ignore_missing_imports = true
+
+# -----------------------------
+# ---- КОНФИГУРАЦИЯ PYTEST ----
+# -----------------------------
+
+[tool.pytest.ini_options]
+
+# Минимальная версия pytest, ниже которой тесты не запустятся
+minversion = "8.0"
+
+# Где искать тесты (папка с тестовыми файлами)
+testpaths = [
+    "tests",
+]
+
+# Дополнительные опции pytest:
+# -r : показывать короткий отчёт по пропускам/ошибкам
+# -a : показать ВСЕ категории причин (xfail, skip, error, fail)
+addopts = "-ra"
+
+# Какие файлы считать тестовыми (по шаблону)
+python_files = ["test_*.py"]
+
+# Какие функции внутри файла считать тестами
+python_functions = ["test_*"]
+
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["src"]
