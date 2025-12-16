@@ -1,5 +1,13 @@
+# Конфигурация pre-commit
+# Запускается локально перед коммитом и проверяет качество кода
+
+default_language_version:
+  python: python3.12
+
 repos:
-  # Базовые универсальные хуки от pre-commit
+  # -----------------------------
+  # Базовые универсальные хуки
+  # -----------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -8,15 +16,19 @@ repos:
       - id: check-yaml               # проверяет корректность YAML
       - id: check-json               # проверяет корректность JSON
 
-  # Ruff — линтер + сортировщик импортов
+  # -----------------------------
+  # Ruff — линтер + автофиксы
+  # -----------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7   # пример версии, можно взять актуальную
+    rev: v0.14.7
     hooks:
       - id: ruff
         args: [--fix]    # сразу чинит то, что может
       - id: ruff-format  # форматирует код по правилам Ruff
 
-  # mypy — типизация
+  # -----------------------------
+  # mypy — статическая типизация
+  # -----------------------------
   - repo: https://github.com/pre-commit/mirrors-mypy      # зеркало MyPy для использования в pre-commit
     rev: v1.19.0                                          # фиксированная версия MyPy-хуков (тег из GitHub)
     hooks:

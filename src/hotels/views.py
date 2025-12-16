@@ -10,9 +10,11 @@ from hotels.services.bookings import create_booking
 
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     """
-    Endpoint для категорий:
-    - GET /api/categories/ -> список категорий
-    - POST /api/categories/ -> создать категорию
+    Работа с категориями номеров.
+
+    Эндпоинты:
+    - GET  /api/categories/  — список категорий
+    - POST /api/categories/  — создание категории
     """
 
     queryset = RoomCategory.objects.all()
@@ -21,9 +23,13 @@ class CategoryListCreateAPIView(generics.ListCreateAPIView):
 
 class RoomListCreateAPIView(generics.ListCreateAPIView):
     """
-    Endpoint для работы со списком номеров:
-    - GET /api/rooms/ -> получить список всех номеров
-    - POST /api/rooms/ -> создать новый номер
+    Работа со списком номеров.
+    Эндпоинты:
+    - GET  /api/rooms/ — список номеров (опционально фильтрация по category)
+    - POST /api/rooms/ — создание номера
+    Дополнительно:
+    - поддерживается сортировка через query-параметр ?ordering=
+      допустимые поля: price, created_at, category
     """
 
     serializer_class = RoomSerializer
@@ -36,19 +42,19 @@ class RoomListCreateAPIView(generics.ListCreateAPIView):
         qs = Room.objects.select_related("category").all()
 
         category_id = self.request.query_params.get("category")
-        if category_id is not None:
-            try:
-                category_id_int = int(category_id)
-            except ValueError:
-                return Room.objects.none()
-            qs = qs.filter(category_id=category_id_int)
+        if category_id:
+            if not category_id.isdigit():
+                return qs.none()
+            qs = qs.filter(category_id=int(category_id))
 
         return qs
 
 
 class RoomDestroyAPIView(generics.DestroyAPIView):
     """
-    Endpoint для удаления номера:
+    Удаление номера.
+
+    Эндпоинт:
     - DELETE /api/rooms/<pk>/
     """
 
@@ -67,8 +73,15 @@ class PingAPIView(APIView):
 
 class BookingCreateAPIView(generics.CreateAPIView):
     """
-    POST /api/bookings/
-    Создать бронь (с проверкой пересечений на уровне приложения).
+    Создание бронирования.
+
+    Эндпоинт:
+    - POST /api/bookings/
+
+    Логика вынесена в сервис create_booking():
+    - проверка диапазона дат
+    - проверка пересечений
+    - создание записи Booking
     """
 
     queryset = Booking.objects.all()
@@ -85,8 +98,10 @@ class BookingCreateAPIView(generics.CreateAPIView):
 
 class BookingDestroyAPIView(generics.DestroyAPIView):
     """
-    DELETE /api/bookings/<pk>
-    Удалить бронь.
+    Удаление бронирования.
+
+    Эндпоинт:
+    - DELETE /api/bookings/<pk>/
     """
 
     queryset = Booking.objects.all()
@@ -95,12 +110,20 @@ class BookingDestroyAPIView(generics.DestroyAPIView):
 
 class RoomBookingsListAPIView(generics.ListAPIView):
     """
-    GET /api/rooms/<room_id>/bookings/
-    Список броней конкретной комнаты, сортировка по date_start.
+    Список бронирований конкретного номера.
+
+    Эндпоинт:
+    - GET /api/rooms/<room_id>/bookings/
+
+    Сортировка: по date_start по возрастанию.
     """
 
     serializer_class = BookingSerializer
 
     def get_queryset(self):
         room_id = self.kwargs["room_id"]
-        return Booking.objects.filter(room_id=room_id).order_by("date_start")
+        return (
+            Booking.objects.select_related("room", "room__category")
+            .filter(room_id=room_id)
+            .order_by("date_start")
+        )

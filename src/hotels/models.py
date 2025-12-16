@@ -6,6 +6,8 @@ from django.db.models import F, Q
 
 
 class RoomCategory(models.Model):
+    """Категория номера (например: standard / business / lux)."""
+
     code = models.CharField(
         max_length=50,
         unique=True,
@@ -29,6 +31,8 @@ class RoomCategory(models.Model):
 
 
 class Room(models.Model):
+    """Номер отеля."""
+
     category = models.ForeignKey(
         RoomCategory,
         on_delete=models.PROTECT,
@@ -45,11 +49,12 @@ class Room(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        # id всегда есть на сохранённом объекте; для удобства читаемости ок
         return f"Room(id={self.pk}, category={self.category.code}, price={self.price})"
 
 
 class Booking(models.Model):
+    """Бронирование номера на диапазон дат."""
+
     room = models.ForeignKey("hotels.Room", on_delete=models.CASCADE, related_name="bookings")
 
     date_start = models.DateTimeField()

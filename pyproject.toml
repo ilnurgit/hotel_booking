@@ -93,16 +93,13 @@ ignore = [
 #  Важно: сейчас правильная секция — именно [tool.ruff.lint.isort]
 # ===========================
 [tool.ruff.lint.isort]
+known-first-party = ["config", "hotels"]
 
 # Объединять импорты с 'as' в одну строку
 combine-as-imports = true
 
 # Не принуждать каждый импорт в отдельную строку
 force-single-line = false
-
-# Импортируемые пакеты, относящиеся к проекту
-# Если у тебя основной модуль называется по-другому, поменяй "app"
-known-first-party = ["app"]
 
 # -----------------------------
 # ----- КОНФИГУРАЦИЯ MYPY -----
@@ -114,8 +111,6 @@ plugins = ["mypy_django_plugin.main"]
 python_version = "3.12"
 mypy_path = ["src"]
 
-[tool.django-stubs]
-django_settings_module = "config.settings"
 # Строгость и полезные предупреждения
 warn_unused_configs = true
 warn_unused_ignores = true
@@ -140,6 +135,9 @@ exclude = [
   "^dist/",
   "^migrations/",
 ]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
 
 # Более мягкие правила для тестов (если в проекте есть каталог tests/)
 [[tool.mypy.overrides]]

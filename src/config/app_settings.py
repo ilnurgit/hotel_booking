@@ -35,4 +35,4 @@ class AppSettings(BaseSettings):
         return [h.strip() for h in self.allowed_hosts.split(",") if h.strip()]
 
 
-settings: AppSettings = AppSettings()  # type: ignore[call-arg]
+settings = AppSettings()

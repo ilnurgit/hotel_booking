@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: hotel_booking
+          POSTGRES_USER: hotel_booking
+          POSTGRES_PASSWORD: hotel_booking
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U hotel_booking -d hotel_booking"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DJANGO_SECRET_KEY: ci-secret-key
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost"
+
+      POSTGRES_DB: hotel_booking
+      POSTGRES_USER: hotel_booking
+      POSTGRES_PASSWORD: hotel_booking
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-ansi
+
+      - name: Ruff (lint)
+        run: |
+          poetry run ruff check .
+
+      - name: Ruff (format check)
+        run: |
+          poetry run ruff format --check .
+
+      - name: Run migrations
+        run: |
+          poetry run python src/manage.py migrate --noinput
+
+      - name: Pytest
+        run: |
+          poetry run pytest

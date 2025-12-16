@@ -1,9 +1,18 @@
+from django.utils.timezone import is_aware
 from rest_framework import serializers
 
 from hotels.models import Booking, Room, RoomCategory
 
 
 class RoomCategorySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор категории номера.
+
+    Используется:
+    - в выдаче списка/деталей категорий
+    - вложенно внутри RoomSerializer (read-only)
+    """
+
     class Meta:
         model = RoomCategory
         fields = (
@@ -17,6 +26,13 @@ class RoomCategorySerializer(serializers.ModelSerializer):
 
 
 class RoomSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор номера.
+
+    В выдаче возвращаем полную категорию (category), а при создании/обновлении
+    принимаем category_id (write-only), чтобы клиент мог указать категорию по id.
+    """
+
     category = RoomCategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
         source="category",
@@ -39,6 +55,14 @@ class RoomSerializer(serializers.ModelSerializer):
 
 
 class BookingSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор бронирования.
+
+    Принцип интервалов: [date_start, date_end)
+    То есть дата окончания НЕ включается в бронь (это позволяет стыковать брони
+    вплотную без пересечения).
+    """
+
     class Meta:
         model = Booking
         fields = (
@@ -55,9 +79,23 @@ class BookingSerializer(serializers.ModelSerializer):
         date_start = attrs.get("date_start")
         date_end = attrs.get("date_end")
 
+        # Защита от некорректных диапазонов
         if date_start is not None and date_end is not None and date_start >= date_end:
             raise serializers.ValidationError(
-                {"date_end": "date_end must be after date_start (we use [start, end) logic)."}
+                {
+                    "date_end": "Дата окончания должна быть позже даты начала "
+                    "(логика интервала: [start, end))."
+                }
+            )
+
+        # При USE_TZ=True желательно работать только с timezone-aware датами
+        if date_start is not None and not is_aware(date_start):
+            raise serializers.ValidationError(
+                {"date_start": "Дата начала должна содержать timezone (например, +03:00 или Z)."}
+            )
+        if date_end is not None and not is_aware(date_end):
+            raise serializers.ValidationError(
+                {"date_end": "Дата окончания должна содержать timezone (например, +03:00 или Z)."}
             )
 
         return attrs
