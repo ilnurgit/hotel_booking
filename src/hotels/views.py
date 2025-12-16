@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from hotels.models import Booking, Room, RoomCategory
 from hotels.serializers import BookingSerializer, RoomCategorySerializer, RoomSerializer
+from hotels.services.bookings import create_booking
 
 
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
@@ -72,6 +73,14 @@ class BookingCreateAPIView(generics.CreateAPIView):
 
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
+
+    def perform_create(self, serializer):
+        room_id = serializer.validated_data["room"].pk
+        date_start = serializer.validated_data["date_start"]
+        date_end = serializer.validated_data["date_end"]
+
+        booking = create_booking(room_id=room_id, date_start=date_start, date_end=date_end)
+        serializer.instance = booking
 
 
 class BookingDestroyAPIView(generics.DestroyAPIView):
