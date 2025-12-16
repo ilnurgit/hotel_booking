@@ -10,8 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import os
 from pathlib import Path
+
+from config.app_settings import settings as app
+
+if not app.debug and app.secret_key == "dev-secret-key":
+    raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-*(!k&12&3#lhpeqg@o-p30&jf^n1^bh+!0-d2uu$=63s)fq%vr"
+SECRET_KEY = app.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = app.debug
 
-ALLOWED_HOSTS: list[str] = []
+ALLOWED_HOSTS: list[str] = app.allowed_hosts_list
 
 
 # Application definition
@@ -78,11 +82,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "hotel_booking"),
-        "USER": os.environ.get("POSTGRES_USER", "hotel_booking"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "hotel_booking"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5433"),
+        "NAME": app.db_name,
+        "USER": app.db_user,
+        "PASSWORD": app.db_password,
+        "HOST": app.db_host,
+        "PORT": app.db_port,
     }
 }
 

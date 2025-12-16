@@ -27,3 +27,5 @@ repos:
           - "djangorestframework-stubs"                   # стабсы типов для DRF (APIView, сериализаторы)
           - "djangorestframework"
           - "psycopg[binary]"
+          - "pydantic"
+          - "pydantic-settings"
