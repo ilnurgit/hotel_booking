@@ -169,3 +169,6 @@ python_files = ["test_*.py"]
 
 # Какие функции внутри файла считать тестами
 python_functions = ["test_*"]
+
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["src"]

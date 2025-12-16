@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from django.contrib.postgres.constraints import ExclusionConstraint
-from django.contrib.postgres.fields import DateRangeField
-from django.contrib.postgres.fields.ranges import RangeOperators
 from django.db import models
-from django.db.models import F, Func, Q, Value
+from django.db.models import F, Q
 
 
 class RoomCategory(models.Model):
@@ -52,14 +50,10 @@ class Room(models.Model):
 
 
 class Booking(models.Model):
-    room = models.ForeignKey(
-        Room,
-        on_delete=models.CASCADE,
-        related_name="bookings",
-    )
-    # Важно: используем [start, end) логику на уровне БД через daterange(..., '[)')
-    date_start = models.DateField()
-    date_end = models.DateField()
+    room = models.ForeignKey("hotels.Room", on_delete=models.CASCADE, related_name="bookings")
+
+    date_start = models.DateTimeField()
+    date_end = models.DateTimeField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -78,16 +72,15 @@ class Booking(models.Model):
             ExclusionConstraint(
                 name="booking_no_overlap_per_room",
                 expressions=[
-                    (F("room"), RangeOperators.EQUAL),
+                    (models.F("room"), "="),
                     (
-                        Func(
-                            F("date_start"),
-                            F("date_end"),
-                            Value("[)"),
-                            function="daterange",
-                            output_field=DateRangeField(),
+                        models.Func(
+                            models.F("date_start"),
+                            models.F("date_end"),
+                            models.Value("[)"),
+                            function="tstzrange",
                         ),
-                        RangeOperators.OVERLAPS,
+                        "&&",
                     ),
                 ],
             ),
