@@ -40,7 +40,7 @@ jobs:
       POSTGRES_DB: hotel_booking
       POSTGRES_USER: hotel_booking
       POSTGRES_PASSWORD: hotel_booking
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: 127.0.0.1
       POSTGRES_PORT: "5432"
 
     steps:
