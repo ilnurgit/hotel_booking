@@ -67,7 +67,7 @@ class PingAPIView(APIView):
 class BookingCreateAPIView(generics.CreateAPIView):
     """
     POST /api/bookings/
-    Создать бронь (пока без проверки пересечений).
+    Создать бронь (с проверкой пересечений на уровне приложения).
     """
 
     queryset = Booking.objects.all()

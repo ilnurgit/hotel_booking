@@ -52,6 +52,7 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
     def validate(self, attrs):
+        room = attrs.get("room")
         date_start = attrs.get("date_start")
         date_end = attrs.get("date_end")
 
@@ -59,4 +60,16 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"date_end": "date_end must be after date_start (we use [start, end) logic)."}
             )
+        if room is not None and date_start is not None and date_end is not None:
+            conflict_exists = Booking.objects.filter(
+                room=room,
+                date_start__lt=date_end,
+                date_end__gt=date_start,
+            ).exists()
+
+            if conflict_exists:
+                raise serializers.ValidationError(
+                    {"non_field_errors": ["Room is already booked for these dates."]}
+                )
+
         return attrs
